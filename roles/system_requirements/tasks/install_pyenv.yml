@@ -1,0 +1,51 @@
+# FIXME: if there's CHANGELOG inside, first occurence of "## Release (version)" will
+# have version number, which we can use to skip downloading and unpacking
+
+- name: "Ensure {{ pyenv_dir }} exists"
+  ansible.builtin.file:
+    path: "{{ pyenv_dir }}"
+    state: directory
+    owner: "{{ system_user_name }}"
+    group: "{{ system_user_name }}"
+
+- name: "Download pyenv {{ pyenv_version }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/pyenv/pyenv/archive/refs/tags/v{{ pyenv_version }}.tar.gz"
+    dest: "{{ system_user_home }}/pyenv.tar.gz"
+
+- name: "Unpack pyenv"
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ system_user_home }}/pyenv.tar.gz"
+    dest: "{{ pyenv_dir }}"
+    extra_opts:
+      - "--strip-components=1"
+    owner: "{{ system_user_name }}"
+    group: "{{ system_user_name }}"
+
+- name: "Remove downloaded archive"
+  ansible.builtin.file:
+    path: "{{ system_user_home }}/pyenv.tar.gz"
+    state: absent
+
+- name: "Ensure pyenv is loaded automatically"
+  ansible.builtin.blockinfile:
+    path: "{{ system_user_home }}/.bashrc"
+    block: |
+      export PYENV_ROOT="{{ pyenv_dir }}"
+      command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init -)"
+    marker: "# {mark} Kustosz pyenv setup managed by Ansible"
+
+- name: "Install Python {{ python_version }}"
+  ansible.builtin.shell: "pyenv install --skip-existing {{ python_version }}"
+  args:
+    executable: "{{ shell_wrapper_script }}"
+
+- name: "Set up default Python version to {{ python_version }}"
+  ansible.builtin.copy:
+    dest: "{{ system_user_home }}/.python-version"
+    content: |
+      {{ python_version }}
+    owner: "{{ system_user_name }}"
+    group: "{{ system_user_name }}"

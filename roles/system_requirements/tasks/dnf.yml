@@ -1,0 +1,43 @@
+- name: "[dnf] Install NGINX"
+  ansible.builtin.dnf:
+    name: nginx
+    state: present
+
+- name: "[dnf] Install Redis"
+  ansible.builtin.dnf:
+    name: redis
+    state: present
+
+- name: "[dnf] Install psycopg2 build dependencies"
+  ansible.builtin.dnf:
+    name:
+      - libpq-devel
+      - python3-devel
+    state: present
+
+- name: "[dnf] Install Python build dependencies"
+  ansible.builtin.dnf:
+    name:
+      - make
+      - gcc
+      - zlib-devel
+      - bzip2
+      - bzip2-devel
+      - readline-devel
+      - sqlite
+      - sqlite-devel
+      - openssl-devel
+      - tk-devel
+      - libffi-devel
+      - xz-devel
+    state: present
+
+- name: "[dnf] Install packages to manage SELinux"
+  ansible.builtin.dnf:
+    name:
+      - python3-libselinux
+      - python3-libsemanage
+      - python3-policycoreutils
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status | default("disabled") == "enabled"

@@ -1,0 +1,9 @@
+- name: Configure NGINX server
+  import_tasks: nginx.yml
+  become: true
+  become_user: root
+
+- name: Configure system services with systemd
+  import_tasks: systemd.yml
+  become: true
+  become_user: root

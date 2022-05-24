@@ -1,0 +1,9 @@
+- name: Install Kustosz
+  hosts: all
+
+  roles:
+    - system_requirements
+    - install
+    - prepare
+    - system_setup
+    - setup

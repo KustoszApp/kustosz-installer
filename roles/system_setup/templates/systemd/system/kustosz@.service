@@ -1,0 +1,15 @@
+[Unit]
+Description=Run Kustosz %i component
+Documentation=https://docs.kustosz.org/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+ExecStart={{ systemd_dispatcher_path }} "%i"
+WorkingDirectory={{ system_user_home }}
+User={{ system_user_name }}
+Group={{ system_user_name }}
+
+[Install]
+WantedBy=multi-user.target

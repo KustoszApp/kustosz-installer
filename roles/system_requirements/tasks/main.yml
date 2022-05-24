@@ -1,0 +1,79 @@
+- name: Meet system requirements - root
+  block:
+    - name: Install required system packages using apt
+      import_tasks: apt.yml
+      when: ansible_facts['os_family']|lower == 'debian'
+
+    - name: Install required system packages using dnf
+      import_tasks: dnf.yml
+      when: ansible_facts['os_family']|lower == 'redhat'
+
+    - name: "Start system services"
+      ansible.builtin.systemd:
+        name: "{{ item }}.service"
+        state: started
+      loop:
+        - redis
+        - nginx
+
+    - name: "Enable system services"
+      ansible.builtin.systemd:
+        name: "{{ item }}.service"
+        enabled: true
+      loop:
+        - redis
+        - nginx
+
+    - name: "Add {{ system_user_name }} user"
+      ansible.builtin.user:
+        name: "{{ system_user_name }}"
+        state: present
+        shell: /bin/bash
+        home: "{{ system_user_home }}"
+        system: true
+
+    - name: "Ensure {{ system_user_home }} is globally readable"
+      ansible.builtin.file:
+        path: "{{ system_user_home }}"
+        mode: 0755
+
+  become: true
+  become_user: root
+
+- name: Meet system requirements - Kustosz user
+  block:
+    - name: Setup shell wrapper for Ansible shell commands
+      ansible.builtin.copy:
+        dest: "{{ shell_wrapper_script }}"
+        content: |
+          #!/bin/bash
+          /bin/bash -il "$@"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+        mode: 0755
+
+    - name: Setup Python wrapper for Ansible shell commands
+      ansible.builtin.copy:
+        dest: "{{ python_wrapper_script }}"
+        content: |
+          #!/bin/bash -il
+          kustosz-manager shell "$@"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+        mode: 0755
+
+    - name: "Install nvm and Node.JS"
+      ansible.builtin.include_role:
+        name: morgangraphics.ansible_role_nvm
+        apply:
+          become: true
+          become_user: "{{ system_user_name }}"
+      vars:
+        nvm_profile: "{{ system_user_home }}/.bashrc"
+        nvm_install: "curl"
+        nvm_version: "0.39.1"
+
+    - name: "Install pyenv and Python"
+      import_tasks: install_pyenv.yml
+  become: true
+  become_user: "{{ system_user_name }}"

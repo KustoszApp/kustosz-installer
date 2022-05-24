@@ -1,0 +1,74 @@
+- name: Import OPML files
+  block:
+
+    - name: "Create OPML directory"
+      ansible.builtin.file:
+        path: "{{ opml_path }}"
+        state: directory
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+
+    - name: "Copy OPML files"
+      ansible.builtin.copy:
+        src: "{{ opml_local_path }}/"
+        dest: "{{ opml_path }}/"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+
+    - name: "Get OPML files on remote machine"
+      ansible.builtin.find:
+        paths: "{{ opml_path }}"
+      register: remote_opmls
+
+    - name: "Import OPML files"
+      ansible.builtin.shell: "kustosz-manager import_channels --file \"{{ item.path }}\" opml"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      with_items: "{{ remote_opmls.files  }}"
+
+  become: true
+  become_user: "{{ system_user_name }}"
+  when: opml_local_path | length != 0
+
+- name: Create web user
+  block:
+
+    - name: Check if user already exists
+      ansible.builtin.shell: |
+        from django.contrib.auth import get_user_model
+        get_user_model().objects.get(username='{{ web_user_name }}')
+      args:
+        executable: "{{ python_wrapper_script }}"
+      register: check_user_exists
+      failed_when: check_user_exists.rc > 1
+      no_log: true
+      ignore_errors: true
+
+    - name: Create web user
+      block:
+
+        - name: Generate random email
+          ansible.builtin.set_fact:
+            random_email_component: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
+
+        - name: Create web user
+          ansible.builtin.shell: |
+            kustosz-manager createsuperuser --no-input --username "{{ web_user_name }}" --email user{{ random_email_component }}@example.invalid
+          args:
+            executable: "{{ shell_wrapper_script }}"
+
+        - name: Set web user password
+          ansible.builtin.shell: |
+            from django.contrib.auth import get_user_model
+            user = get_user_model().objects.get(username='{{ web_user_name }}')
+            user.set_password('{{ web_user_password }}')
+            user.save(update_fields=('password',))
+          args:
+            executable: "{{ python_wrapper_script }}"
+      when: check_user_exists.rc == 1
+
+  become: true
+  become_user: "{{ system_user_name }}"
+  when:
+    - web_user_name | length != 0
+    - web_user_password | length != 0

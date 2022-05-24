@@ -1,0 +1,44 @@
+- name: "[apt] Install NGINX"
+  ansible.builtin.apt:
+    name: nginx
+    update_cache: true
+
+- name: "[apt] Install Redis"
+  ansible.builtin.apt:
+    name: redis
+
+- name: "[apt] Install psycopg2 build dependencies"
+  ansible.builtin.apt:
+    name:
+      - libpq-dev 
+      - python-dev
+
+- name: "[apt] Install Python build dependencies"
+  ansible.builtin.apt:
+    name:
+      - make
+      - build-essential
+      - libssl-dev
+      - zlib1g-dev
+      - libbz2-dev
+      - libreadline-dev
+      - libsqlite3-dev
+      - wget
+      - curl
+      - llvm
+      - libncursesw5-dev
+      - xz-utils
+      - tk-dev
+      - libxml2-dev
+      - libxmlsec1-dev
+      - libffi-dev
+      - liblzma-dev
+
+- name: "[apt] Install packages to manage SELinux"
+  ansible.builtin.dnf:
+    name:
+      - python3-selinux
+      - selinux-utils
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status | default("disabled") == "enabled"

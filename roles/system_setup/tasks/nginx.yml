@@ -1,0 +1,34 @@
+- name: "Allow NGINX to connect with gunicorn"
+  ansible.posix.seboolean:
+    name: "{{ item }}"
+    state: yes
+    persistent: yes
+  loop:
+    - httpd_can_network_connect
+    - httpd_can_network_relay
+  when:
+    - ansible_selinux is defined
+    - ansible_selinux.status | default("disabled") == "enabled"
+
+- name: "Create NGINX conf common baseline"
+  import_tasks: nginx_redhat.yml
+  when: ansible_facts['os_family']|lower == 'redhat'
+
+- name: "Create Kustosz site file"
+  ansible.builtin.template:
+    src: nginx/site-kustosz
+    dest: /etc/nginx/sites-available/kustosz
+
+- name: "Make Kustosz available"
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/kustosz
+    dest: /etc/nginx/sites-enabled/kustosz
+    state: link
+
+# FIXME?: there's default server listening on port 80
+
+# FIXME: this should be handler
+- name: "Restart NGINX"
+  ansible.builtin.systemd:
+    name: nginx.service
+    state: restarted

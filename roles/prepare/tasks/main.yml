@@ -1,0 +1,14 @@
+- name: "Become user"
+  block:
+    - name: "Prepare Kustosz database"
+      ansible.builtin.shell: "kustosz-manager migrate --noinput"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+
+    - name: "Create cache table"
+      ansible.builtin.shell: "kustosz-manager createcachetable"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+
+  become: true
+  become_user: "{{ system_user_name }}"

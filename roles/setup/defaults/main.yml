@@ -1,0 +1,15 @@
+system_user_name: kustosz
+system_user_home: /opt/kustosz
+web_user_name: kustosz
+web_user_password: ""
+kustosz_base_dir: "{{ system_user_home }}/web"
+venv_path: "{{ system_user_home }}/.venv"
+kustosz_frontend_version: "22.05.0"
+db_path: "{{ kustosz_base_dir }}/db"
+settings_path: "{{ kustosz_base_dir }}/settings"
+frontend_path: "{{ kustosz_base_dir }}/staticfiles"
+opml_path: "{{ system_user_home }}/opml"
+opml_local_path: ""
+
+shell_wrapper_script: "{{ system_user_home }}/.shell_wrapper"
+python_wrapper_script: "{{ system_user_home }}/.python_wrapper"

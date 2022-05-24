@@ -1,0 +1,11 @@
+system_user_name: kustosz
+system_user_home: /opt/kustosz
+kustosz_base_dir: "{{ system_user_home }}/web"
+venv_path: "{{ system_user_home }}/.venv"
+kustosz_frontend_version: "22.05.0"
+db_path: "{{ kustosz_base_dir }}/db"
+settings_path: "{{ kustosz_base_dir }}/settings"
+frontend_path: "{{ kustosz_base_dir }}/staticfiles"
+settings_local_path: ""
+
+shell_wrapper_script: "{{ system_user_home }}/.shell_wrapper"
