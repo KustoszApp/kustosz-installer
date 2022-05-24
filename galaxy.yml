@@ -50,7 +50,7 @@ tags:
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
 dependencies: 
-  ansible.posix: "*"
+  "ansible.posix": "*"
   # collection can only depend on collection, role can only depend on role
   # since this is a role, this adds one manual step for anyone who would like to 
   # use our installer...

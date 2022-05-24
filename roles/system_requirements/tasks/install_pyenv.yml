@@ -8,25 +8,45 @@
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
 
-- name: "Download pyenv {{ pyenv_version }}"
-  ansible.builtin.get_url:
-    url: "https://github.com/pyenv/pyenv/archive/refs/tags/v{{ pyenv_version }}.tar.gz"
-    dest: "{{ system_user_home }}/pyenv.tar.gz"
+- name: "Read pyenv version"
+  ansible.builtin.command: >
+    awk '/Release/ {print $NF;exit}' {{ pyenv_dir }}/CHANGELOG.md
+  register: _pyenv_version_check
+  failed_when: false
+  no_log: true
+  ignore_errors: true
 
-- name: "Unpack pyenv"
-  ansible.builtin.unarchive:
-    remote_src: true
-    src: "{{ system_user_home }}/pyenv.tar.gz"
-    dest: "{{ pyenv_dir }}"
-    extra_opts:
-      - "--strip-components=1"
-    owner: "{{ system_user_name }}"
-    group: "{{ system_user_name }}"
+- name: "Check if pyenv setup may be skipped"
+  set_fact:
+    _skip_pyenv_setup: true
+  when:
+    - _pyenv_version_check.rc == 0
+    - pyenv_version in _pyenv_version_check.stdout
 
-- name: "Remove downloaded archive"
-  ansible.builtin.file:
-    path: "{{ system_user_home }}/pyenv.tar.gz"
-    state: absent
+- name: "Setup pyenv"
+  block:
+
+    - name: "Download pyenv {{ pyenv_version }}"
+      ansible.builtin.get_url:
+        url: "https://github.com/pyenv/pyenv/archive/refs/tags/v{{ pyenv_version }}.tar.gz"
+        dest: "{{ system_user_home }}/pyenv.tar.gz"
+
+    - name: "Unpack pyenv"
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: "{{ system_user_home }}/pyenv.tar.gz"
+        dest: "{{ pyenv_dir }}"
+        extra_opts:
+          - "--strip-components=1"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+
+    - name: "Remove downloaded archive"
+      ansible.builtin.file:
+        path: "{{ system_user_home }}/pyenv.tar.gz"
+        state: absent
+
+  when: _skip_pyenv_setup is undefined
 
 - name: "Ensure pyenv is loaded automatically"
   ansible.builtin.blockinfile:
@@ -37,15 +57,21 @@
       eval "$(pyenv init -)"
     marker: "# {mark} Kustosz pyenv setup managed by Ansible"
 
-- name: "Install Python {{ python_version }}"
-  ansible.builtin.shell: "pyenv install --skip-existing {{ python_version }}"
+- name: "Check if Python {{ pyenv_python_version }} must be compiled"
+  ansible.builtin.stat:
+    path: "{{ pyenv_dir }}/versions/{{ pyenv_python_version }}/bin/python"
+  register: _pyenv_python_binary
+
+- name: "Install Python {{ pyenv_python_version }}"
+  ansible.builtin.shell: "pyenv install --skip-existing {{ pyenv_python_version }}"
   args:
     executable: "{{ shell_wrapper_script }}"
+  when: not _pyenv_python_binary.stat.exists
 
-- name: "Set up default Python version to {{ python_version }}"
+- name: "Set up default Python version to {{ pyenv_python_version }}"
   ansible.builtin.copy:
     dest: "{{ system_user_home }}/.python-version"
     content: |
-      {{ python_version }}
+      {{ pyenv_python_version }}
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
