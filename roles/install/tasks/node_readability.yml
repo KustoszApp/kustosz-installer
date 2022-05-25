@@ -1,0 +1,15 @@
+- name: "Check if kustosz-node-readability is already installed"
+  ansible.builtin.shell: >
+    command -v kustosz-node-readability
+  args:
+    executable: "{{ shell_wrapper_script }}"
+  register: _node_readability_available_check
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: "Install Kustosz node-readability script"
+  ansible.builtin.shell: "npm install -g kustosz-node-readability"
+  args:
+    executable: "{{ shell_wrapper_script }}"
+  when: _node_readability_available_check.rc != 0

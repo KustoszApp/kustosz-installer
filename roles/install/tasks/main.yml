@@ -1,11 +1,11 @@
 - name: "Become user"
   block:
-    # FIXME: don't create if it already exists
-    - name: "Create Python virtual environment"
-      ansible.builtin.shell: "python -m venv {{ venv_path }}"
-      args:
-        executable: "{{ shell_wrapper_script }}"
 
+    - name: "Create Python virtual environment"
+      import_tasks: venv.yml
+
+    # FIXME: shouldn't put in ~/.bashrc blindly
+    # FIXME: last three variables don't belong here logically
     - name: "Ensure venv is loaded automatically"
       ansible.builtin.blockinfile:
         path: "{{ system_user_home }}/.bashrc"
@@ -17,22 +17,13 @@
           export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
         marker: "# {mark} Kustosz venv setup managed by Ansible"
 
-    # FIXME: at least, version kustosz package
-    #        ideally, use generated requirements.txt to install pinned versions
-    - name: "Ensure latest pip version"
-      ansible.builtin.shell: "python -m pip install pip wheel setuptools==59.6.0"
-      args:
-        executable: "{{ shell_wrapper_script }}"
-
+    # FIXME: we shouldn't need to update installer every time new version is released
+    #        there should be a tool that can grab latest versions for us automatically
     - name: "Install Kustosz backend server"
-      ansible.builtin.shell: "python -m pip install kustosz[container]"
-      args:
-        executable: "{{ shell_wrapper_script }}"
+      import_tasks: backend.yml
 
     - name: "Install Kustosz node-readability script"
-      ansible.builtin.shell: "npm install -g kustosz-node-readability"
-      args:
-        executable: "{{ shell_wrapper_script }}"
+      import_tasks: node_readability.yml
 
     - name: "Create directories"
       ansible.builtin.file:
@@ -45,39 +36,11 @@
         - "{{ settings_path }}"
         - "{{ frontend_path }}"
 
-    # FIXME: don't download if they already exist
-    - name: "Download frontend files"
-      ansible.builtin.get_url:
-        url: "https://github.com/KustoszApp/web-ui/releases/download/{{ kustosz_frontend_version }}/kustosz.tar.xz"
-        dest: "{{ frontend_path }}/kustosz.tar.xz"
+    - name: "Install frontend files"
+      import_tasks: frontend.yml
 
-    - name: "Unpack frontend files"
-      ansible.builtin.unarchive:
-        remote_src: true
-        src: "{{ frontend_path }}/kustosz.tar.xz"
-        dest: "{{ frontend_path }}"
-        owner: "{{ system_user_name }}"
-        group: "{{ system_user_name }}"
-
-    - name: "Remove downloaded archive"
-      ansible.builtin.file:
-        path: "{{ frontend_path }}/kustosz.tar.xz"
-        state: absent
-
-    - name: "Copy main setting file"
-      ansible.builtin.copy:
-        src: settings.yaml
-        dest: "{{ settings_path }}/settings.yaml"
-        owner: "{{ system_user_name }}"
-        group: "{{ system_user_name }}"
-
-    - name: "Copy local setting file"
-      ansible.builtin.copy:
-        src: "{{ settings_local_path }}"
-        dest: "{{ settings_path }}/settings.yaml"
-        owner: "{{ system_user_name }}"
-        group: "{{ system_user_name }}"
-      when: "settings_local_path | length != 0"
+    - name: "Copy settings files"
+      import_tasks: settings.yml
 
   become: true
   become_user: "{{ system_user_name }}"

@@ -1,0 +1,59 @@
+# grep check.rc will be:
+# - 2, when file doesn't exist (we assume directory is empty)
+# - 1, when file exists but doesn't contain match (we assume old installation)
+# - 0, when file exists and contains match (we assume expected installation)
+
+- name: "Set internal frontend paths"
+  ansible.builtin.set_fact:
+    _frontend_timestamp_path: "{{ frontend_path }}/.version"
+    _frontend_archive_path: "{{ frontend_path }}/kustosz.tar.xz"
+
+- name: "Check current frontend version"
+  ansible.builtin.command: >
+    grep -q "{{ kustosz_frontend_version }}" "{{ _frontend_timestamp_path }}"
+  register: _frontend_version_check
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: "Clean up old frontend installation"
+  ansible.builtin.file:
+    path: "{{ frontend_path }}"
+    state: "{{ item }}"
+    owner: "{{ system_user_name }}"
+    group: "{{ system_user_name }}"
+  loop:
+    - absent
+    - directory
+  when: _frontend_version_check.rc == 1
+
+- name: "Download and unarchive frontend files"
+  block:
+
+    - name: "Download frontend files"
+      ansible.builtin.get_url:
+        url: "https://github.com/KustoszApp/web-ui/releases/download/{{ kustosz_frontend_version }}/kustosz.tar.xz"
+        dest: "{{ _frontend_archive_path }}"
+
+    - name: "Unpack frontend files"
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: "{{ _frontend_archive_path }}"
+        dest: "{{ frontend_path }}"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+
+    - name: "Remove downloaded archive"
+      ansible.builtin.file:
+        path: "{{ _frontend_archive_path }}"
+        state: absent
+
+    - name: "Put timestamp for future role runs"
+      ansible.builtin.copy:
+        dest: "{{ _frontend_timestamp_path }}"
+        content: |
+          {{ kustosz_frontend_version }}
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+
+  when: _frontend_version_check.rc != 0

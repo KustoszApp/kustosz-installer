@@ -1,0 +1,16 @@
+- name: "Remove existing virtual environment"
+  ansible.builtin.file:
+    path: "{{ venv_path }}"
+    state: absent
+  when: recreate_venv_if_exists
+
+- name: "Check if virtual environment already exists"
+  ansible.builtin.stat:
+    path: "{{ venv_path }}/bin/python"
+  register: _venv_python_binary
+
+- name: "Create Python virtual environment"
+  ansible.builtin.shell: "{{ python_path }} -m venv {{ venv_path }}"
+  args:
+    executable: "{{ shell_wrapper_script }}"
+  when: not _venv_python_binary.stat.exists

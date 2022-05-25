@@ -1,6 +1,3 @@
-# FIXME: if there's CHANGELOG inside, first occurence of "## Release (version)" will
-# have version number, which we can use to skip downloading and unpacking
-
 - name: "Ensure {{ pyenv_dir }} exists"
   ansible.builtin.file:
     path: "{{ pyenv_dir }}"
@@ -12,8 +9,8 @@
   ansible.builtin.command: >
     awk '/Release/ {print $NF;exit}' {{ pyenv_dir }}/CHANGELOG.md
   register: _pyenv_version_check
+  changed_when: false
   failed_when: false
-  no_log: true
   ignore_errors: true
 
 - name: "Check if pyenv setup may be skipped"

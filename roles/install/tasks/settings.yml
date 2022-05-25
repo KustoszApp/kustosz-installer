@@ -1,0 +1,16 @@
+# FIXME: download setting file from github and add required content
+
+- name: "Copy main setting file"
+  ansible.builtin.copy:
+    src: settings.yaml
+    dest: "{{ settings_path }}/settings.yaml"
+    owner: "{{ system_user_name }}"
+    group: "{{ system_user_name }}"
+
+- name: "Copy local setting file"
+  ansible.builtin.copy:
+    src: "{{ settings_local_path }}"
+    dest: "{{ settings_path }}/settings.yaml"
+    owner: "{{ system_user_name }}"
+    group: "{{ system_user_name }}"
+  when: "settings_local_path | length != 0"

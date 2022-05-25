@@ -1,0 +1,19 @@
+# FIXME: at least, version kustosz package
+#        ideally, use generated requirements.txt to install pinned versions
+
+- name: "Ensure latest pip version"
+  ansible.builtin.shell: "{{ python_path }} -m pip install --upgrade pip wheel setuptools==59.6.0"
+  args:
+    executable: "{{ shell_wrapper_script }}"
+  register: cmd_result
+  changed_when: 
+    - "'Successfully installed' in cmd_result.stdout"
+
+# FIXME: Installing packages should trigger systemd services restart later on
+- name: "Install Kustosz backend server"
+  ansible.builtin.shell: "{{ python_path }} -m pip install kustosz[container]"
+  args:
+    executable: "{{ shell_wrapper_script }}"
+  register: cmd_result
+  changed_when: 
+    - "'Successfully installed' in cmd_result.stdout"
