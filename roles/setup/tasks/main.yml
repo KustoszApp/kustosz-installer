@@ -40,8 +40,8 @@
       args:
         executable: "{{ python_wrapper_script }}"
       register: check_user_exists
+      changed_when: false
       failed_when: check_user_exists.rc > 1
-      no_log: true
       ignore_errors: true
 
     - name: Create web user
@@ -49,11 +49,12 @@
 
         - name: Generate random email
           ansible.builtin.set_fact:
-            random_email_component: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
+            _random_email_component: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=8') }}"
 
         - name: Create web user
-          ansible.builtin.shell: |
-            kustosz-manager createsuperuser --no-input --username "{{ web_user_name }}" --email user{{ random_email_component }}@example.invalid
+          ansible.builtin.shell: >
+            kustosz-manager createsuperuser --no-input --username "{{ web_user_name }}"
+            --email user{{ _random_email_component }}@example.invalid
           args:
             executable: "{{ shell_wrapper_script }}"
 
