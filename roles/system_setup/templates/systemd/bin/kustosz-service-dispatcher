@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -il
 # This file is part of Kustosz, https://www.kustosz.org/
 # This is simple dispatcher that will set up environment variables
 # and fork on actual process.
