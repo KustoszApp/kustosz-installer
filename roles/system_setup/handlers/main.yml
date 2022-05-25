@@ -1,0 +1,15 @@
+- name: "Restart NGINX"
+  ansible.builtin.systemd:
+    name: nginx.service
+    state: restarted
+  become: true
+  become_user: root
+
+- name: "Restart Kustosz system services"
+  ansible.builtin.systemd:
+    name: "kustosz@{{ item }}.service"
+    state: restarted
+  loop: "{{ kustosz_system_services }}"
+  become: true
+  become_user: root
+  when: configure_system_services

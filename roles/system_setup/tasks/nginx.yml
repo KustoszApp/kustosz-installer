@@ -1,3 +1,18 @@
+# Debian-based distributions contain distro-specific
+# /etc/nginx/sites-{available,enabled}/ directories. It's customary to drop
+# virtual host configuration into sites-available and create symlink in
+# sites-enabled.
+# Red Hat-based distributions don't follow this convention.
+#
+# Otherwise, differences in default configuration are minimal:
+# - RH runs under user nginx
+# - Debian runs under user www-data
+# - RH has `tcp_nodelay on` and `keepalive_timeout 65` (which are close to NGINX defaults anyway)
+# - Debian has `ssl_protocols`, `ssl_prefer_server_ciphers` and `gzip on`
+#
+# FIXME: ensure we support everything mentioned in:
+# http://whitenoise.evans.io/en/stable/#what-s-the-point-in-whitenoise-when-i-can-do-the-same-thing-in-a-few-lines-of-apache-nginx-config
+
 - name: "Allow NGINX to connect with gunicorn"
   ansible.posix.seboolean:
     name: "{{ item }}"
@@ -10,25 +25,16 @@
     - ansible_selinux is defined
     - ansible_selinux.status | default("disabled") == "enabled"
 
-- name: "Create NGINX conf common baseline"
+- name: "Debian-compatible NGINX configuration"
+  import_tasks: nginx_debian.yml
+  when: ansible_facts['os_family']|lower == 'debian'
+
+- name: "Red Hat-compatible NGINX configuration"
   import_tasks: nginx_redhat.yml
   when: ansible_facts['os_family']|lower == 'redhat'
 
-- name: "Create Kustosz site file"
-  ansible.builtin.template:
-    src: nginx/site-kustosz
-    dest: /etc/nginx/sites-available/kustosz
-
-- name: "Make Kustosz available"
-  ansible.builtin.file:
-    src: /etc/nginx/sites-available/kustosz
-    dest: /etc/nginx/sites-enabled/kustosz
-    state: link
-
-# FIXME?: there's default server listening on port 80
-
-# FIXME: this should be handler
-- name: "Restart NGINX"
-  ansible.builtin.systemd:
-    name: nginx.service
-    state: restarted
+- name: "Generate Let's Encrypt certificate with certbot"
+  ansible.builtin.command: >
+    certbot -n --nginx -d {{ kustosz_nginx_server_name | replace(" ", ",") }}
+    {% if certbot_extra_args | length > 0 %}{{ certbot_extra_args }}{% endif %}
+  when: run_certbot

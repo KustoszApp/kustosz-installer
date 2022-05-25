@@ -3,29 +3,16 @@
     src: systemd/bin/kustosz-service-dispatcher
     dest: "{{ systemd_dispatcher_path }}"
     mode: 0755
+  notify: "Restart Kustosz system services"
 
 - name: "Create Kustosz service unit file"
   ansible.builtin.template:
     src: "systemd/system/kustosz@.service"
     dest: "/etc/systemd/system/kustosz@.service"
-
-- name: "Start Kustosz system services"
-  ansible.builtin.systemd:
-    name: "kustosz@{{ item }}.service"
-    state: started
-  loop:
-    - web
-    - worker
-    - clock
-    - feedfetcher
+  notify: "Restart Kustosz system services"
 
 - name: "Enable Kustosz system services"
   ansible.builtin.systemd:
     name: "kustosz@{{ item }}.service"
     enabled: true
-  loop:
-    - web
-    - worker
-    - clock
-    - feedfetcher
-
+  loop: "{{ kustosz_system_services }}"

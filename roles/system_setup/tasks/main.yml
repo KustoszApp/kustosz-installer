@@ -2,8 +2,10 @@
   import_tasks: nginx.yml
   become: true
   become_user: root
+  when: configure_nginx_server
 
 - name: Configure system services with systemd
   import_tasks: systemd.yml
   become: true
   become_user: root
+  when: configure_system_services

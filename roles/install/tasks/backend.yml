@@ -9,7 +9,6 @@
   changed_when: 
     - "'Successfully installed' in cmd_result.stdout"
 
-# FIXME: Installing packages should trigger systemd services restart later on
 - name: "Install Kustosz backend server"
   ansible.builtin.shell: "{{ python_path }} -m pip install kustosz[container]"
   args:
@@ -17,3 +16,4 @@
   register: cmd_result
   changed_when: 
     - "'Successfully installed' in cmd_result.stdout"
+  notify: "Restart Kustosz system services"

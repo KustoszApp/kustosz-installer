@@ -1,13 +1,5 @@
-- name: "Create directories"
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-  loop:
-    - /etc/nginx/sites-available/
-    - /etc/nginx/sites-enabled/
-
-- name: "Enable Debian-compatible config layout"
-  ansible.builtin.copy:
-    dest: "/etc/nginx/conf.d/debian_compat.conf"
-    content: |
-      include /etc/nginx/sites-enabled/*;
+- name: "[Red Hat] Create Kustosz virtual host configuration"
+  ansible.builtin.template:
+    src: "{{ nginx_template_path }}"
+    dest: /etc/nginx/conf.d/kustosz.conf
+  notify: "Restart NGINX"
