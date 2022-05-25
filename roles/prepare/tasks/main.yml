@@ -4,11 +4,17 @@
       ansible.builtin.shell: "kustosz-manager migrate --noinput"
       args:
         executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - "'Applying' in cmd_result.stdout"
 
     - name: "Create cache table"
       ansible.builtin.shell: "kustosz-manager createcachetable"
       args:
         executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - cmd_result.stdout | length == 0
 
   become: true
   become_user: "{{ system_user_name }}"
