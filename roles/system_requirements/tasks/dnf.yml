@@ -11,6 +11,8 @@
 - name: "[dnf] Install psycopg2 build dependencies"
   ansible.builtin.dnf:
     name:
+      - make
+      - gcc
       - libpq-devel
       - python3-devel
     state: present
@@ -18,8 +20,6 @@
 - name: "[dnf] Install Python build dependencies"
   ansible.builtin.dnf:
     name:
-      - make
-      - gcc
       - zlib-devel
       - bzip2
       - bzip2-devel
@@ -31,6 +31,7 @@
       - libffi-devel
       - xz-devel
     state: present
+  when: not use_system_python
 
 - name: "[dnf] Install packages to manage SELinux"
   ansible.builtin.dnf:
