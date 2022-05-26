@@ -11,7 +11,7 @@ nvm_path: "{{ system_user_home }}/.nvm"
 use_system_python: false
 python_path: "python3"
 pyenv_version: "2.3.0"
-pyenv_dir: "{{ system_user_home }}/.pyenv"
+pyenv_path: "{{ system_user_home }}/.pyenv"
 pyenv_python_version: "3.10.4"
 
 # Private variables

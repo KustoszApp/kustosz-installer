@@ -1,6 +1,6 @@
-- name: "Ensure {{ pyenv_dir }} exists"
+- name: "Ensure {{ pyenv_path }} exists"
   ansible.builtin.file:
-    path: "{{ pyenv_dir }}"
+    path: "{{ pyenv_path }}"
     state: directory
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
@@ -8,7 +8,7 @@
 
 - name: "Read pyenv version"
   ansible.builtin.command: >
-    awk '/Release/ {print $NF;exit}' {{ pyenv_dir }}/CHANGELOG.md
+    awk '/Release/ {print $NF;exit}' {{ pyenv_path }}/CHANGELOG.md
   register: _pyenv_version_check
   changed_when: false
   failed_when: false
@@ -33,7 +33,7 @@
       ansible.builtin.unarchive:
         remote_src: true
         src: "{{ system_user_home }}/pyenv.tar.gz"
-        dest: "{{ pyenv_dir }}"
+        dest: "{{ pyenv_path }}"
         extra_opts:
           - "--strip-components=1"
         owner: "{{ system_user_name }}"
@@ -50,14 +50,14 @@
   ansible.builtin.blockinfile:
     path: "{{ environment_activation_script }}"
     block: |
-      export PYENV_ROOT="{{ pyenv_dir }}"
+      export PYENV_ROOT="{{ pyenv_path }}"
       command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
       eval "$(pyenv init -)"
     marker: "# {mark} Kustosz pyenv setup"
 
 - name: "Check if Python {{ pyenv_python_version }} must be compiled"
   ansible.builtin.stat:
-    path: "{{ pyenv_dir }}/versions/{{ pyenv_python_version }}/bin/python"
+    path: "{{ pyenv_path }}/versions/{{ pyenv_python_version }}/bin/python"
   register: _pyenv_python_binary
 
 - name: "Install Python {{ pyenv_python_version }}"
@@ -68,7 +68,7 @@
 
 - name: "Set up default Python version to {{ pyenv_python_version }}"
   ansible.builtin.copy:
-    dest: "{{ pyenv_dir }}/version"
+    dest: "{{ pyenv_path }}/version"
     content: |
       {{ pyenv_python_version }}
     owner: "{{ system_user_name }}"
