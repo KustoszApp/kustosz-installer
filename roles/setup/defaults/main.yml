@@ -8,5 +8,5 @@ web_user_name: kustosz
 web_user_password: ""
 
 # Private variables
-shell_wrapper_script: "{{ system_user_home }}/.shell_wrapper"
-python_wrapper_script: "{{ system_user_home }}/.python_wrapper"
+shell_wrapper_script: "{{ system_user_home }}/.kustosz_shell_wrapper"
+python_wrapper_script: "{{ system_user_home }}/.kustosz_python_wrapper"

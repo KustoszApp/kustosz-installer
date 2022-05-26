@@ -4,18 +4,22 @@
     - name: "Create Python virtual environment"
       import_tasks: venv.yml
 
-    # FIXME: shouldn't put in ~/.bashrc blindly
-    # FIXME: last three variables don't belong here logically
     - name: "Ensure venv is loaded automatically"
       ansible.builtin.blockinfile:
-        path: "{{ system_user_home }}/.bashrc"
+        path: "{{ environment_activation_script }}"
         block: |
           export VIRTUAL_ENV="{{ venv_path }}"
           export PATH="$VIRTUAL_ENV/bin:$PATH"
+        marker: "# {mark} Kustosz venv setup"
+
+    - name: "Ensure web process variables are always set"
+      ansible.builtin.blockinfile:
+        path: "{{ environment_activation_script }}"
+        block: |
           export ENV_FOR_DYNACONF="production"
           export DJANGO_SETTINGS_MODULE=kustosz.settings
           export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
-        marker: "# {mark} Kustosz venv setup managed by Ansible"
+        marker: "# {mark} Kustosz web setup"
 
     # FIXME: we shouldn't need to update installer every time new version is released
     #        there should be a tool that can grab latest versions for us automatically

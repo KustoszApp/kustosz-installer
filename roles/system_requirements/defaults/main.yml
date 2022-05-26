@@ -1,11 +1,12 @@
 system_user_name: kustosz
 system_user_home: /opt/kustosz
+system_user_shell: /bin/bash
 
 run_system_requirements_root: true
 
 use_system_nodejs: false
 nodejs_version: "16"
-nvm_dir: "{{ system_user_home }}/.nvm"
+nvm_path: "{{ system_user_home }}/.nvm"
 
 use_system_python: false
 python_path: "python3"
@@ -14,8 +15,10 @@ pyenv_dir: "{{ system_user_home }}/.pyenv"
 pyenv_python_version: "3.10.4"
 
 # Private variables
-shell_wrapper_script: "{{ system_user_home }}/.shell_wrapper"
-python_wrapper_script: "{{ system_user_home }}/.python_wrapper"
+environment_activation_script: "{{ system_user_home }}/.kustosz_activate"
+shell_wrapper_script: "{{ system_user_home }}/.kustosz_shell_wrapper"
+python_wrapper_script: "{{ system_user_home }}/.kustosz_python_wrapper"
 required_system_services:
   - redis
   - nginx
+nvm_version: "0.39.1"

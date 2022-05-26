@@ -48,12 +48,12 @@
 
 - name: "Ensure pyenv is loaded automatically"
   ansible.builtin.blockinfile:
-    path: "{{ system_user_home }}/.bashrc"
+    path: "{{ environment_activation_script }}"
     block: |
       export PYENV_ROOT="{{ pyenv_dir }}"
       command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
       eval "$(pyenv init -)"
-    marker: "# {mark} Kustosz pyenv setup managed by Ansible"
+    marker: "# {mark} Kustosz pyenv setup"
 
 - name: "Check if Python {{ pyenv_python_version }} must be compiled"
   ansible.builtin.stat:

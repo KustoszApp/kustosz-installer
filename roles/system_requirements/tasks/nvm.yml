@@ -1,0 +1,24 @@
+- name: "Ensure {{ nvm_path }} directory exists"
+  ansible.builtin.file:
+    mode: 0775
+    path: "{{ nvm_path }}"
+    state: directory
+
+- name: "Install NVM"
+  ansible.builtin.shell: >
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v{{ nvm_version }}/install.sh |
+    NVM_DIR={{ nvm_path }} PROFILE={{ environment_activation_script }} /bin/sh
+  args:
+    warn: false
+  register: nvm_result
+  changed_when: "'already installed' not in nvm_result.stdout"
+  failed_when: >
+    ('permission denied' in nvm_result.stderr) or
+    ('Failed writing body' in nvm_result.stdout)
+
+- name: "Install Node.JS"
+  ansible.builtin.shell: "nvm install {{ nodejs_version }}"
+  args:
+    executable: "{{ shell_wrapper_script }}"
+  register: node_version_response
+  changed_when: "'already installed' not in node_version_response.stderr"

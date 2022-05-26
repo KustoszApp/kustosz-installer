@@ -18,7 +18,7 @@ certbot_extra_args: ""
 systemd_dispatcher_path: /usr/local/bin/kustosz-service-dispatcher
 
 # Private variables
-shell_wrapper_script: "{{ system_user_home }}/.shell_wrapper"
+shell_wrapper_script: "{{ system_user_home }}/.kustosz_shell_wrapper"
 kustosz_system_services:
   - web
   - worker

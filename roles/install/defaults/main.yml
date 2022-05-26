@@ -14,4 +14,4 @@ kustosz_frontend_version: "22.05.0"
 settings_local_path: ""
 
 # Private variables
-shell_wrapper_script: "{{ system_user_home }}/.shell_wrapper"
+shell_wrapper_script: "{{ system_user_home }}/.kustosz_shell_wrapper"

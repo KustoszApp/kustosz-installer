@@ -1,4 +1,4 @@
-#!/bin/bash -il
+#!/bin/sh
 # This file is part of Kustosz, https://www.kustosz.org/
 # This is simple dispatcher that will set up environment variables
 # and fork on actual process.
@@ -6,11 +6,7 @@
 # We could have used systemd Environment, except that it's only good
 # for setting static values; it can't prepend value to current $PATH.
 
-export VIRTUAL_ENV="{{ venv_path }}"
-export PATH="$VIRTUAL_ENV/bin:$PATH"
-export ENV_FOR_DYNACONF="production"
-export DJANGO_SETTINGS_MODULE=kustosz.settings
-export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
+. "{{ environment_activation_script }}"
 
 export PORT="${PORT:-{{ kustosz_internal_port }}}"
 

@@ -4,10 +4,6 @@
 
 Ensure you have Ansible and Ansible Galaxy installed
 
-Install dependent **role** (this can't be done automatically, as Ansible collections can only depend on other collections, but not on roles):
-
-    ansible-galaxy install morgangraphics.ansible_role_nvm
-
 Install this collection:
 
     ansible-galaxy collection install kustosz.install

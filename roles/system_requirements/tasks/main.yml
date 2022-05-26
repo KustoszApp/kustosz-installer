@@ -24,7 +24,7 @@
       ansible.builtin.user:
         name: "{{ system_user_name }}"
         state: present
-        shell: /bin/bash
+        shell: "{{ system_user_shell }}"
         home: "{{ system_user_home }}"
         system: true
 
@@ -39,12 +39,29 @@
 
 - name: Meet system requirements - Kustosz user
   block:
+    - name: Check if Kustosz environment activation script exists
+      ansible.builtin.stat:
+        path: "{{ environment_activation_script }}"
+      register: _env_activation_script
+
+    - name: Create Kustosz environment activation script
+      ansible.builtin.copy:
+        content: "#!/bin/sh"
+        dest: "{{ environment_activation_script }}"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+        mode: 0755
+      when: not _env_activation_script.stat.exists
+
     - name: Setup shell wrapper for Ansible shell commands
       ansible.builtin.copy:
         dest: "{{ shell_wrapper_script }}"
         content: |
-          #!/bin/bash
-          /bin/bash -il "$@"
+          #!/bin/sh
+          if [ "${1}x" = '-cx'  ]; then
+            shift
+          fi
+          /bin/sh -c ". \"{{ environment_activation_script }}\" && $@"
         owner: "{{ system_user_name }}"
         group: "{{ system_user_name }}"
         mode: 0755
@@ -53,28 +70,21 @@
       ansible.builtin.copy:
         dest: "{{ python_wrapper_script }}"
         content: |
-          #!/bin/bash -il
+          #!/bin/sh
+          . "{{ environment_activation_script }}"
           kustosz-manager shell "$@"
         owner: "{{ system_user_name }}"
         group: "{{ system_user_name }}"
         mode: 0755
 
-    - name: "Install nvm and Node.JS"
-      ansible.builtin.include_role:
-        name: morgangraphics.ansible_role_nvm
-        apply:
-          become: true
-          become_user: "{{ system_user_name }}"
-      vars:
-        nvm_profile: "{{ system_user_home }}/.bashrc"
-        nvm_install: "curl"
-        nvm_version: "0.39.1"
+    - name: Install NVM and Node.JS
+      import_tasks: nvm.yml
       when:
         - not use_system_nodejs
 
     - name: "Check system Python meets minimal requirements"
       ansible.builtin.command: >
-        {{ python_path }} -c 
+        {{ python_path }} -c
         'import sys; print(sys.version_info >= (3, 9, 0))'
       register: cmd_result
       when:
