@@ -2,6 +2,7 @@
   ansible.builtin.template:
     src: "{{ nginx_template_path }}"
     dest: /etc/nginx/sites-available/kustosz
+    mode: 0644
 
 - name: "[Debian] Enable Kustosz virtual host configuration"
   ansible.builtin.file:

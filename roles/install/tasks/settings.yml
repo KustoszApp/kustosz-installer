@@ -6,6 +6,7 @@
     dest: "{{ settings_path }}/settings.yaml"
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
+    mode: 0600
 
 - name: "Copy local setting file"
   ansible.builtin.copy:
@@ -13,4 +14,5 @@
     dest: "{{ settings_path }}/settings.yaml"
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
+    mode: 0600
   when: "settings_local_path | length != 0"

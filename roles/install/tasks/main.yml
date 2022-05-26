@@ -31,6 +31,7 @@
         state: "directory"
         owner: "{{ system_user_name }}"
         group: "{{ system_user_name }}"
+        mode: 0755
       loop:
         - "{{ db_path }}"
         - "{{ settings_path }}"

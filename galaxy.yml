@@ -17,7 +17,7 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- Mirek Długosz <mirek@mirekdlugosz.com>
+  - Mirek Długosz <mirek@mirekdlugosz.com>
 
 ### OPTIONAL but strongly recommended
 
@@ -29,7 +29,7 @@ description: >
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- EUPL-1.2
+  - EUPL-1.2
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'
@@ -49,12 +49,12 @@ tags:
 # collection label 'namespace.name'. The value is a version range
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
-dependencies: 
+dependencies:
   "ansible.posix": "*"
   # collection can only depend on collection, role can only depend on role
-  # since this is a role, this adds one manual step for anyone who would like to 
+  # since this is a role, this adds one manual step for anyone who would like to
   # use our installer...
-  #morgangraphics.ansible_role_nvm: ">=1.4.3"
+  # morgangraphics.ansible_role_nvm: ">=1.4.3"
 
 # The URL of the originating SCM repository
 repository: https://github.com/KustoszApp/kustosz-installer

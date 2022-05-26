@@ -2,4 +2,5 @@
   ansible.builtin.template:
     src: "{{ nginx_template_path }}"
     dest: /etc/nginx/conf.d/kustosz.conf
+    mode: 0644
   notify: "Restart NGINX"

@@ -22,6 +22,7 @@
     state: "{{ item }}"
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
+    mode: 0755
   loop:
     - absent
     - directory

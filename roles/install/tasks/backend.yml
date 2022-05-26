@@ -6,7 +6,7 @@
   args:
     executable: "{{ shell_wrapper_script }}"
   register: cmd_result
-  changed_when: 
+  changed_when:
     - "'Successfully installed' in cmd_result.stdout"
 
 - name: "Install Kustosz backend server"
@@ -14,6 +14,6 @@
   args:
     executable: "{{ shell_wrapper_script }}"
   register: cmd_result
-  changed_when: 
+  changed_when:
     - "'Successfully installed' in cmd_result.stdout"
   notify: "Restart Kustosz system services"

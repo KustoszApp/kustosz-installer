@@ -9,6 +9,7 @@
   ansible.builtin.template:
     src: "systemd/system/kustosz@.service"
     dest: "/etc/systemd/system/kustosz@.service"
+    mode: 0644
   notify: "Restart Kustosz system services"
 
 - name: "Enable Kustosz system services"

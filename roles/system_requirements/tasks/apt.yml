@@ -15,7 +15,7 @@
   ansible.builtin.apt:
     name:
       - build-essential
-      - libpq-dev 
+      - libpq-dev
       - python3-dev
 
 - name: "[apt] Install Python venv module"
