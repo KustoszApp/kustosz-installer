@@ -68,7 +68,7 @@
 
 - name: "Set up default Python version to {{ pyenv_python_version }}"
   ansible.builtin.copy:
-    dest: "{{ system_user_home }}/.python-version"
+    dest: "{{ pyenv_dir }}/version"
     content: |
       {{ pyenv_python_version }}
     owner: "{{ system_user_name }}"
