@@ -21,4 +21,5 @@ python_wrapper_script: "{{ system_user_home }}/.kustosz_python_wrapper"
 required_system_services:
   - redis
   - nginx
+nvm_installer_path: "{{ system_user_home }}/.nvm_install.sh"
 nvm_version: "0.39.1"

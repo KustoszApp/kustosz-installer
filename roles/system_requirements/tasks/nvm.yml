@@ -1,24 +1,48 @@
 - name: "Ensure {{ nvm_path }} directory exists"
   ansible.builtin.file:
-    mode: 0775
+    mode: 0755
     path: "{{ nvm_path }}"
     state: directory
 
-- name: "Install NVM"
-  ansible.builtin.shell: >
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v{{ nvm_version }}/install.sh |
-    NVM_DIR={{ nvm_path }} PROFILE={{ environment_activation_script }} /bin/sh
-  args:
-    warn: false
-  register: nvm_result
-  changed_when: "'already installed' not in nvm_result.stdout"
-  failed_when: >
-    ('permission denied' in nvm_result.stderr) or
-    ('Failed writing body' in nvm_result.stdout)
-
-- name: "Install Node.JS"
-  ansible.builtin.shell: "nvm install {{ nodejs_version }}"
+- name: "Check available node version"
+  ansible.builtin.shell: "nvm ls {{ nodejs_version }}"
   args:
     executable: "{{ shell_wrapper_script }}"
-  register: node_version_response
-  changed_when: "'already installed' not in node_version_response.stderr"
+  register: _node_version_check
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: "Install NVM and Node.JS"
+  block:
+
+    - name: "Download NVM installer"
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/nvm-sh/nvm/v{{ nvm_version }}/install.sh"
+        dest: "{{ nvm_installer_path }}"
+
+    - name: "Install NVM"
+      ansible.builtin.command: "/bin/sh {{ nvm_installer_path }}"
+      environment:
+        NVM_DIR: "{{ nvm_path }}"
+        PROFILE: "{{ environment_activation_script }}"
+      register: nvm_result
+      changed_when: "'already installed' not in nvm_result.stdout"
+      failed_when: >
+        ('permission denied' in nvm_result.stderr) or
+        ('Failed writing body' in nvm_result.stdout)
+
+    - name: "Install Node.JS"
+      ansible.builtin.shell: "nvm install {{ nodejs_version }}"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      register: node_version_response
+      changed_when: "'already installed' not in node_version_response.stderr"
+
+    - name: "Remove temporary installer file"
+      ansible.builtin.file:
+        path: "{{ nvm_installer_path }}"
+        state: absent
+
+  when:
+    - _node_version_check.rc != 0
