@@ -89,6 +89,16 @@
         - "'Successfully installed' in cmd_result.stdout"
       notify: "Restart Kustosz system services"
 
+    - name: "Install psycopg2 package"
+      ansible.builtin.shell: >
+        {{ python_path }} -m pip install psycopg2
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - "'Successfully installed' in cmd_result.stdout"
+      when: use_postgres
+
     - name: "Install Kustosz backend server"
       ansible.builtin.shell: "{{ python_path }} -m pip install kustosz=={{ _backend_real_version }}"
       args:

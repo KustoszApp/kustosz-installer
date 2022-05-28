@@ -5,6 +5,8 @@ system_user_shell: /bin/bash
 
 run_system_requirements_root: true
 
+use_postgres: true
+
 use_system_nodejs: false
 nodejs_version: "16"
 nvm_path: "{{ system_user_home }}/.nvm"

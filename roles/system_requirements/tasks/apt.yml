@@ -17,6 +17,7 @@
       - build-essential
       - libpq-dev
       - python3-dev
+  when: use_postgres
 
 - name: "[apt] Install Python venv module"
   ansible.builtin.apt:
