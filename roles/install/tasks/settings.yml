@@ -1,12 +1,40 @@
-# FIXME: download setting file from github and add required content
-
-- name: "Copy main setting file"
-  ansible.builtin.copy:
-    src: settings.yaml
-    dest: "{{ settings_path }}/settings.yaml"
+- name: "Download main settings file"
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/KustoszApp/server/{{ _backend_real_version }}/settings/settings.yaml"
+    dest: "{{ settings_path }}/settings.yaml.downloaded"
+    force: true
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
     mode: 0600
+
+- name: "Add system-specific settings"
+  ansible.builtin.blockinfile:
+    path: "{{ settings_path }}/settings.yaml.downloaded"
+    block: |2
+        CELERY_BROKER_URL: 'redis://localhost:6379/'
+        DATABASES__default__NAME: '{{ db_path }}/db.sqlite3'
+        KUSTOSZ_READABILITY_NODE_ENABLED: True
+    marker: "# {mark} added by kustosz-installer"
+
+- name: "Check if settings changed"
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: _settings_check
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+  loop:
+    - "{{ settings_path }}/settings.yaml"
+    - "{{ settings_path }}/settings.yaml.downloaded"
+
+- name: "Save new version of settings"
+  ansible.builtin.command: >
+    mv {{ settings_path }}/settings.yaml.downloaded {{ settings_path }}/settings.yaml
+  notify: "Restart Kustosz system services"
+  when: >
+    (not _settings_check.results[0].stat.exists) or
+    (_settings_check.results[0].stat.checksum !=
+     _settings_check.results[1].stat.checksum)
 
 - name: "Copy local setting file"
   ansible.builtin.copy:
@@ -15,4 +43,5 @@
     owner: "{{ system_user_name }}"
     group: "{{ system_user_name }}"
     mode: 0600
+  notify: "Restart Kustosz system services"
   when: "settings_local_path | length != 0"
