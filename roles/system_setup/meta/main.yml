@@ -1,2 +1,12 @@
+galaxy_info:
+  platforms:
+    - name: GenericLinux
+      versions:
+        - all
+  author: Mirek Długosz <mirek@mirekdlugosz.com>
+  description: Role that manages system services after Kustosz installation
+  license: EUPL-1.2
+  min_ansible_version: "1.9"
+
 dependencies:
   - role: system_requirements
