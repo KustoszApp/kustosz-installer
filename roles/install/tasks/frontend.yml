@@ -3,14 +3,22 @@
 # - 1, when file exists but doesn't contain match (we assume old installation)
 # - 0, when file exists and contains match (we assume expected installation)
 
+- name: "Set requested frontend version"
+  ansible.builtin.command: >
+    {{ python_path }} {{ get_version_script }}
+    --component web-ui --version {{ kustosz_frontend_version }}
+  register: _get_version
+  changed_when: false
+
 - name: "Set internal frontend paths"
   ansible.builtin.set_fact:
     _frontend_timestamp_path: "{{ frontend_path }}/.version"
     _frontend_archive_path: "{{ frontend_path }}/kustosz.tar.xz"
+    _frontend_real_version: "{{ _get_version.stdout | trim }}"
 
 - name: "Check current frontend version"
   ansible.builtin.command: >
-    grep -q "{{ kustosz_frontend_version }}" "{{ _frontend_timestamp_path }}"
+    grep -q "{{ _frontend_real_version }}" "{{ _frontend_timestamp_path }}"
   register: _frontend_version_check
   changed_when: false
   failed_when: false
@@ -33,7 +41,7 @@
 
     - name: "Download frontend files"
       ansible.builtin.get_url:
-        url: "https://github.com/KustoszApp/web-ui/releases/download/{{ kustosz_frontend_version }}/kustosz.tar.xz"
+        url: "https://github.com/KustoszApp/web-ui/releases/download/{{ _frontend_real_version }}/kustosz.tar.xz"
         dest: "{{ _frontend_archive_path }}"
 
     - name: "Unpack frontend files"
@@ -53,7 +61,7 @@
       ansible.builtin.copy:
         dest: "{{ _frontend_timestamp_path }}"
         content: |
-          {{ kustosz_frontend_version }}
+          {{ _frontend_real_version }}
         owner: "{{ system_user_name }}"
         group: "{{ system_user_name }}"
 

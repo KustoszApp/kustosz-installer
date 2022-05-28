@@ -77,6 +77,14 @@
         group: "{{ system_user_name }}"
         mode: 0755
 
+    - name: Setup Kustosz version script
+      ansible.builtin.copy:
+        dest: "{{ get_version_script }}"
+        src: "get_version.py"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+        mode: 0755
+
     - name: Install NVM and Node.JS
       import_tasks: nvm.yml
       when:

@@ -21,8 +21,6 @@
           export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
         marker: "# {mark} Kustosz web setup"
 
-    # FIXME: we shouldn't need to update installer every time new version is released
-    #        there should be a tool that can grab latest versions for us automatically
     - name: "Install Kustosz backend server"
       import_tasks: backend.yml
 
