@@ -95,6 +95,7 @@
         {{ python_path }} -c
         'import sys; print(sys.version_info >= (3, 9, 0))'
       register: cmd_result
+      changed_when: false
       when:
         - use_system_python
 

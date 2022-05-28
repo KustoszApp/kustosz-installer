@@ -1,19 +1,117 @@
-# FIXME: at least, version kustosz package
-#        ideally, use generated requirements.txt to install pinned versions
+# grep check.rc will be:
+# - 2, when file doesn't exist (we assume directory is empty)
+# - 1, when file exists but doesn't contain match (we assume old installation)
+# - 0, when file exists and contains match (we assume expected installation)
 
-- name: "Ensure latest pip version"
-  ansible.builtin.shell: "{{ python_path }} -m pip install --upgrade pip wheel setuptools==59.6.0"
-  args:
-    executable: "{{ shell_wrapper_script }}"
-  register: cmd_result
-  changed_when:
-    - "'Successfully installed' in cmd_result.stdout"
+- name: "Set requested backend version backend"
+  ansible.builtin.command: >
+    {{ python_path }} {{ get_version_script }}
+    --component server --version {{ kustosz_backend_version }}
+  register: _get_version
+  changed_when: false
 
-- name: "Install Kustosz backend server"
-  ansible.builtin.shell: "{{ python_path }} -m pip install kustosz[container]"
-  args:
-    executable: "{{ shell_wrapper_script }}"
-  register: cmd_result
-  changed_when:
-    - "'Successfully installed' in cmd_result.stdout"
-  notify: "Restart Kustosz system services"
+- name: "Set internal backend variables"
+  ansible.builtin.set_fact:
+    _backend_timestamp_path: "{{ venv_path }}/.kustosz_version"
+    _backend_requirements_path: "{{ venv_path }}/.kustosz-requirements.txt"
+    _backend_real_version: "{{ _get_version.stdout | trim }}"
+
+- name: "Check current backend version"
+  ansible.builtin.command: >
+    grep -q "{{ _backend_real_version }}" "{{ _backend_timestamp_path }}"
+  register: _backend_version_check
+  changed_when: false
+  failed_when: false
+  ignore_errors: true
+
+- name: "Install Kustosz backend"
+  when: >
+    force_install_backend or _backend_version_check.rc != 0
+
+  block:
+
+    - name: "Check if Kustosz system services are installed"
+      ansible.builtin.stat:
+        path: "{{ kustosz_system_services_unit_path }}"
+      register: _system_services_check
+      changed_when: false
+      failed_when: false
+      ignore_errors: true
+
+    - name: "Stop Kustosz system services"
+      ansible.builtin.systemd:
+        name: "kustosz@{{ item }}.service"
+        state: stopped
+      loop: "{{ kustosz_system_services }}"
+      become: true
+      become_user: root
+      notify: "Restart Kustosz system services"
+      when: _system_services_check.stat.exists
+
+    - name: "Remove existing virtual environment"
+      ansible.builtin.file:
+        path: "{{ venv_path }}"
+        state: absent
+
+    - name: "Create Python virtual environment"
+      ansible.builtin.shell: "{{ python_path }} -m venv {{ venv_path }}"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+
+    - name: "Ensure venv is loaded automatically"
+      ansible.builtin.blockinfile:
+        path: "{{ environment_activation_script }}"
+        block: |
+          export VIRTUAL_ENV="{{ venv_path }}"
+          export PATH="$VIRTUAL_ENV/bin:$PATH"
+        marker: "# {mark} Kustosz venv setup"
+
+    - name: "Download requirements file"
+      ansible.builtin.get_url:
+        url: "https://github.com/KustoszApp/server/releases/download/{{ _backend_real_version }}/requirements-installer.txt"
+        dest: "{{ _backend_requirements_path }}"
+
+    - name: "Ensure latest pip version"
+      ansible.builtin.shell: "{{ python_path }} -m pip install --upgrade pip wheel setuptools==59.6.0"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - "'Successfully installed' in cmd_result.stdout"
+
+    - name: "Install Kustosz backend server Python dependencies"
+      ansible.builtin.shell: >
+        {{ python_path }} -m pip install -r {{ _backend_requirements_path }}
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - "'Successfully installed' in cmd_result.stdout"
+      notify: "Restart Kustosz system services"
+
+    - name: "Install Kustosz backend server"
+      ansible.builtin.shell: "{{ python_path }} -m pip install kustosz=={{ _backend_real_version }}"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - "'Successfully installed' in cmd_result.stdout"
+      notify: "Restart Kustosz system services"
+
+    - name: "Install additional Python packages"
+      ansible.builtin.shell: "{{ python_path }} -m pip install {{ extra_python_packages }}"
+      args:
+        executable: "{{ shell_wrapper_script }}"
+      register: cmd_result
+      changed_when:
+        - "'Successfully installed' in cmd_result.stdout"
+      when: extra_python_packages | length > 0
+      notify: "Restart Kustosz system services"
+
+    - name: "Put timestamp for future role runs"
+      ansible.builtin.copy:
+        dest: "{{ _backend_timestamp_path }}"
+        content: |
+          {{ _backend_real_version }}
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"

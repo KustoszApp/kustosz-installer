@@ -1,16 +1,11 @@
-# grep check.rc will be:
-# - 2, when file doesn't exist (we assume directory is empty)
-# - 1, when file exists but doesn't contain match (we assume old installation)
-# - 0, when file exists and contains match (we assume expected installation)
-
-- name: "Set requested frontend version"
+- name: "Set requested frontend version variable"
   ansible.builtin.command: >
     {{ python_path }} {{ get_version_script }}
     --component web-ui --version {{ kustosz_frontend_version }}
   register: _get_version
   changed_when: false
 
-- name: "Set internal frontend paths"
+- name: "Set internal frontend variables"
   ansible.builtin.set_fact:
     _frontend_timestamp_path: "{{ frontend_path }}/.version"
     _frontend_archive_path: "{{ frontend_path }}/kustosz.tar.xz"
@@ -24,20 +19,22 @@
   failed_when: false
   ignore_errors: true
 
-- name: "Clean up old frontend installation"
-  ansible.builtin.file:
-    path: "{{ frontend_path }}"
-    state: "{{ item }}"
-    owner: "{{ system_user_name }}"
-    group: "{{ system_user_name }}"
-    mode: 0755
-  loop:
-    - absent
-    - directory
-  when: _frontend_version_check.rc == 1
+- name: "Install Kustosz frontend"
+  when:
+    force_install_frontend or _frontend_version_check.rc != 0
 
-- name: "Download and unarchive frontend files"
   block:
+
+    - name: "Clean up old frontend installation"
+      ansible.builtin.file:
+        path: "{{ frontend_path }}"
+        state: "{{ item }}"
+        owner: "{{ system_user_name }}"
+        group: "{{ system_user_name }}"
+        mode: 0755
+      loop:
+        - absent
+        - directory
 
     - name: "Download frontend files"
       ansible.builtin.get_url:
@@ -64,5 +61,3 @@
           {{ _frontend_real_version }}
         owner: "{{ system_user_name }}"
         group: "{{ system_user_name }}"
-
-  when: _frontend_version_check.rc != 0

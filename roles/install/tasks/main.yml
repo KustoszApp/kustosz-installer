@@ -1,26 +1,6 @@
 - name: "Become user"
   block:
 
-    - name: "Create Python virtual environment"
-      import_tasks: venv.yml
-
-    - name: "Ensure venv is loaded automatically"
-      ansible.builtin.blockinfile:
-        path: "{{ environment_activation_script }}"
-        block: |
-          export VIRTUAL_ENV="{{ venv_path }}"
-          export PATH="$VIRTUAL_ENV/bin:$PATH"
-        marker: "# {mark} Kustosz venv setup"
-
-    - name: "Ensure web process variables are always set"
-      ansible.builtin.blockinfile:
-        path: "{{ environment_activation_script }}"
-        block: |
-          export ENV_FOR_DYNACONF="production"
-          export DJANGO_SETTINGS_MODULE=kustosz.settings
-          export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
-        marker: "# {mark} Kustosz web setup"
-
     - name: "Install Kustosz backend server"
       import_tasks: backend.yml
 
@@ -44,6 +24,15 @@
 
     - name: "Copy settings files"
       import_tasks: settings.yml
+
+    - name: "Ensure web process variables are always set"
+      ansible.builtin.blockinfile:
+        path: "{{ environment_activation_script }}"
+        block: |
+          export ENV_FOR_DYNACONF="production"
+          export DJANGO_SETTINGS_MODULE=kustosz.settings
+          export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
+        marker: "# {mark} Kustosz web setup"
 
   become: true
   become_user: "{{ system_user_name }}"

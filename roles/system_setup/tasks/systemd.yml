@@ -8,7 +8,7 @@
 - name: "Create Kustosz service unit file"
   ansible.builtin.template:
     src: "systemd/system/kustosz@.service"
-    dest: "/etc/systemd/system/kustosz@.service"
+    dest: "{{ kustosz_system_services_unit_path }}"
     mode: 0644
   notify: "Restart Kustosz system services"
 
