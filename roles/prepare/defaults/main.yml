@@ -1,3 +1,0 @@
-system_user_home: /opt/kustosz
-
-shell_wrapper_script: "{{ system_user_home }}/.kustosz_shell_wrapper"
