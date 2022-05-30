@@ -37,7 +37,7 @@
      _settings_check.results[1].stat.checksum)
 
 - name: "Copy local setting file"
-  ansible.builtin.copy:
+  ansible.builtin.template:
     src: "{{ settings_local_path }}"
     dest: "{{ settings_path }}/settings.yaml"
     owner: "{{ system_user_name }}"
