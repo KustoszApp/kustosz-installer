@@ -38,3 +38,4 @@
     certbot -n --nginx -d {{ kustosz_nginx_server_name | replace(" ", ",") }}
     {% if certbot_extra_args | length > 0 %}{{ certbot_extra_args }}{% endif %}
   when: run_certbot
+  notify: "Restart NGINX"
