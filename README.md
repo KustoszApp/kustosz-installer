@@ -1,30 +1,25 @@
-# Kustosz installer - `kustosz.install` Ansible collection
+[![Kustosz](./kustosz_logo.svg)](https://www.kustosz.org)
 
-🔨 🔧 Please bear with us until we have better documentation. 🐻 📖
+# Kustosz automatic installer - `kustosz.install` Ansible collection
 
-Ensure you have Ansible and Ansible Galaxy installed
+Focus on the worthwhile content with Kustosz, open source self-hosted web application.
 
-Install this collection:
+This repository contains automatic installer.
 
-    ansible-galaxy collection install kustosz.install
+## Installation
 
-Create basic inventory file:
+See [automatic installer usage](https://docs.kustosz.org/en/stable/installation/vps-installer.html) for instructions on how to install and use the installer.
 
-```
-[kustosz]
-fqdn.host.com
+See [installer development documentation](https://docs.kustosz.org/en/stable/development/installer.html) for instructions on how to run development version of installer.
 
-[kustosz:vars]
-# variables required to connect to host, see:
-# https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html#connection-variables
-ansible_user=myuser
+## Contributing
 
-# variables used by playbook, see `roles/*/defaults/main.yml`
-settings_local_path=/home/myuser/somedir/settings.yaml
-web_user_name=kustoszuser
-web_user_password=mysecretpassword
-```
+All contributions are welcome!
 
-Run playbook:
+If you have found a problem or want to ask a question, feel free to [submit an issue](https://github.com/KustoszApp/kustosz-installer/issues). There's no template to follow. Usually it's good idea to describe what did you do, what did you expect to happen and what happened instead.
 
-    ansible-playbook kustosz.install.playbook -i ./myinventory
+If you want to contribute code, just fork the repository and [submit a pull request](https://github.com/KustoszApp/kustosz-installer/pulls). Instructions on setting up local development environment can be found at [docs.kustosz.org](https://docs.kustosz.org/en/stable/development/installer.html).
+
+## License
+
+Kustosz is distributed under terms of [European Union Public Licence](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12)
