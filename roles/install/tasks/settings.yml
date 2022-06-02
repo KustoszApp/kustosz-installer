@@ -1,3 +1,16 @@
+- name: Check if kustosz_settings_allowed_hosts variable is set
+  ansible.builtin.set_fact:
+    _allowed_hosts: "{{ kustosz_settings_allowed_hosts}}"
+  when:
+    - kustosz_settings_allowed_hosts | length > 0
+
+- name: Create allowed_hosts variable based on kustosz_nginx_server_name
+  ansible.builtin.set_fact:
+    _allowed_hosts: "{{ kustosz_nginx_server_name.split(' ') }}"
+  when:
+    - kustosz_settings_allowed_hosts | length == 0
+    - kustosz_nginx_server_name | length > 0
+
 - name: "Download main settings file"
   ansible.builtin.get_url:
     url: "https://raw.githubusercontent.com/KustoszApp/server/{{ _backend_real_version }}/settings/settings.yaml"
@@ -14,6 +27,12 @@
         CELERY_BROKER_URL: 'redis://localhost:6379/'
         DATABASES__default__NAME: '{{ db_path }}/db.sqlite3'
         KUSTOSZ_READABILITY_NODE_ENABLED: True
+        {% if _allowed_hosts is defined -%}
+        ALLOWED_HOSTS:
+        {%+ for host in _allowed_hosts %}
+        - "{{ host }}"
+        {% endfor %}
+        {%- endif -%}
     marker: "# {mark} added by kustosz-installer"
 
 - name: "Check if settings changed"

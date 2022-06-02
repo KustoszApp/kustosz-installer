@@ -32,6 +32,8 @@ db_path: "{{ kustosz_base_dir }}/db"
 settings_path: "{{ kustosz_base_dir }}/settings"
 frontend_path: "{{ kustosz_base_dir }}/staticfiles"
 
+kustosz_settings_allowed_hosts: []
+
 settings_local_path: ""
 
 # first used in system_setup
