@@ -28,11 +28,19 @@
     - name: "Ensure web process variables are always set"
       ansible.builtin.blockinfile:
         path: "{{ environment_activation_script }}"
-        block: |
+        block: |2
           export ENV_FOR_DYNACONF="production"
           export DJANGO_SETTINGS_MODULE=kustosz.settings
           export KUSTOSZ_BASE_DIR="{{ kustosz_base_dir }}"
+          if ! grep -q SECRET_KEY "{{ settings_path }}/settings.local.yaml" 2>/dev/null; then
+            if [ -e "{{ secret_key_file }}" ]; then
+              . "{{ secret_key_file }}"
+            fi
+          fi
         marker: "# {mark} Kustosz web setup"
+
+    - name: "Create file with Django SECRET_KEY"
+      import_tasks: secret_key.yml
 
   become: true
   become_user: "{{ system_user_name }}"
