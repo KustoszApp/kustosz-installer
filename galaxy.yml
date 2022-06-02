@@ -21,6 +21,11 @@ authors:
 
 ### OPTIONAL but strongly recommended
 
+build_ignore:
+  - playbooks/vagrant.yml
+  - .envrc
+  - .gitignore
+
 # A short summary description of the collection
 description: >
   Ansible collection that installs Kustosz, open source self-hosted web
