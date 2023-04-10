@@ -1,6 +1,6 @@
 - name: Check if kustosz_settings_allowed_hosts variable is set
   ansible.builtin.set_fact:
-    _allowed_hosts: "{{ kustosz_settings_allowed_hosts}}"
+    _allowed_hosts: "{{ kustosz_settings_allowed_hosts }}"
   when:
     - kustosz_settings_allowed_hosts | length > 0
 
