@@ -8,7 +8,7 @@ run_system_requirements_root: true
 use_postgres: true
 
 use_system_nodejs: false
-nodejs_version: "18"
+nodejs_version: "20"
 nvm_path: "{{ system_user_home }}/.nvm"
 
 use_system_python: false
@@ -67,7 +67,7 @@ required_system_services:
   - redis
   - nginx
 nvm_installer_path: "{{ system_user_home }}/.nvm_install.sh"
-nvm_version: "0.39.6"
+nvm_version: "0.39.7"
 pyenv_version: "2.3.34"
 secret_key_file: "{{ system_user_home }}/.kustosz_secret_key"
 kustosz_system_services:
