@@ -15,7 +15,7 @@ use_system_python: false
 python_path: "python3"
 
 pyenv_path: "{{ system_user_home }}/.pyenv"
-pyenv_python_version: "3.11.7"
+pyenv_python_version: "3.11.8"
 
 # first used in install
 kustosz_frontend_version: "latest"
@@ -68,7 +68,7 @@ required_system_services:
   - nginx
 nvm_installer_path: "{{ system_user_home }}/.nvm_install.sh"
 nvm_version: "0.39.7"
-pyenv_version: "2.3.34"
+pyenv_version: "2.3.36"
 secret_key_file: "{{ system_user_home }}/.kustosz_secret_key"
 kustosz_system_services:
   - web
